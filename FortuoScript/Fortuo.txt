@@ -1,0 +1,82 @@
+﻿
+Fortuo is a stack based, interpreted programming language.
+
+Integers are added to the stack.
+Following commands are supported:
+
+******************
+*    Commands    *
+******************
+
+Definition of stack object naming convention:
+
+Stack:
+<value1>
+<value2>
+<value3>
+...
+
+<value1> is the object on top of the stack. 
+<value2> is the top after popping <value1>.
+
+------------------------------------------------------------
+.
+Pops an object from the stack and prints it to the standard output.
+Exceptions: StackUnderFlow
+------------------------------------------------------------
+cr
+Prints \r\n (<CR><LF>) to the standard output.
+Exceptions: -
+------------------------------------------------------------
+clear
+Clears the stack.
+Exceptions: -
+------------------------------------------------------------
+add
+Pops two objects from the stack and adds them together.
+The result is pushed on of the stack.
+Exceptions: StackUnderFlow, InconsistentTypes
+------------------------------------------------------------
+sub
+Pops two objects from the stack and subtracts <value1> from <value2>.
+The result is pushed on of the stack.
+Exceptions: StackUnderFlow, InconsistentTypes
+------------------------------------------------------------
+mul
+Pops two objects from the stack and multiplies them together.
+The result is pushed on of the stack.
+Exceptions: StackUnderFlow, InconsistentTypes
+------------------------------------------------------------
+div
+Pops two objects from the stack and divides <value2> by <value1>.
+The result is pushed on of the stack.
+Exceptions: StackUnderFlow, InconsistentTypes
+------------------------------------------------------------
+mod
+Pops two objects from the stack and calculates 
+the integer division remainder from <value2> / <value1>.
+The result is pushed on of the stack.
+Exceptions: StackUnderFlow, InconsistentTypes
+------------------------------------------------------------
+pstack
+Prints the stack without changing it.
+Exceptions: -
+------------------------------------------------------------
+dup
+Copies the top object from the stack and pushes it on the stack.
+Exceptions: StackEmpty
+------------------------------------------------------------
+/<name>
+Puts variable name definition on stack.
+Exceptions: -
+------------------------------------------------------------
+def
+<value2> has to be a name definition.
+<value1> is any kind of object.
+Adds the definition to the dictionary.
+Exceptions: StackUnderFlow, InconstistentTypes
+------------------------------------------------------------
+pdict
+Prints the content of the global dictionary.
+Exceptions: -
+------------------------------------------------------------
