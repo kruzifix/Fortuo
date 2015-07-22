@@ -3,7 +3,7 @@
 % created by David Cukrowicz
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% clear Stack
+% clear Stack and Dictionary
 clear
 
 % integer addition, subtraction, multiplication and division
@@ -28,3 +28,7 @@ add exch pstack
 var1 dup add . cr
 % redefine var1
 /var1 20 def var1 . cr
+
+% define function
+/sq { dup mul } def % squares number on top of stack
+5 sq . cr

@@ -29,7 +29,7 @@ Prints \r\n (<CR><LF>) to the standard output.
 Exceptions: -
 ------------------------------------------------------------
 clear
-Clears the stack.
+Clears the stack and global dictionary.
 Exceptions: -
 ------------------------------------------------------------
 add

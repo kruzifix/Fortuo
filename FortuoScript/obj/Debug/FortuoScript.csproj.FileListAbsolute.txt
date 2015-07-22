@@ -5,3 +5,10 @@ D:\Github\FortuoScript\FortuoScript\obj\Debug\FortuoScript.csprojResolveAssembly
 D:\Github\FortuoScript\FortuoScript\obj\Debug\FortuoScript.exe
 D:\Github\FortuoScript\FortuoScript\obj\Debug\FortuoScript.pdb
 D:\Github\FortuoScript\FortuoScript\bin\Debug\test.for
+D:\Github\Fortuo\FortuoScript\bin\Debug\FortuoScript.exe.config
+D:\Github\Fortuo\FortuoScript\obj\Debug\FortuoScript.exe
+D:\Github\Fortuo\FortuoScript\obj\Debug\FortuoScript.pdb
+D:\Github\Fortuo\FortuoScript\bin\Debug\test.for
+D:\Github\Fortuo\FortuoScript\bin\Debug\FortuoScript.exe
+D:\Github\Fortuo\FortuoScript\bin\Debug\FortuoScript.pdb
+D:\Github\Fortuo\FortuoScript\obj\Debug\FortuoScript.csprojResolveAssemblyReference.cache
