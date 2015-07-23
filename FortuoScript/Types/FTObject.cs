@@ -12,16 +12,16 @@ namespace FortuoScript.Types
         String,
         Int,
         Bool,
-        StartCommandBlock,
+        StartSet,
         Word,
-        EndCommandBlock,
+        EndSet,
         WordSet
     }
 
     public class FTObject
     {
         public FTType Type { get; private set; }
-        public object Value { get; private set; }
+        public object Value { get; set; }
 
         public FTObject(FTType type, object value)
         {

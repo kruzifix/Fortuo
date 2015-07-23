@@ -1,7 +1,6 @@
 ﻿
 Fortuo is a stack based, interpreted programming language.
 
-Integers are added to the stack.
 Following commands are supported:
 
 ******************
@@ -29,7 +28,7 @@ Prints \r\n (<CR><LF>) to the standard output.
 Exceptions: -
 ------------------------------------------------------------
 clear
-Clears the stack and global dictionary.
+Resets the whole Interpreter. (Clears the stack and global dictionary.)
 Exceptions: -
 ------------------------------------------------------------
 add
@@ -78,5 +77,13 @@ Exceptions: StackUnderFlow, InconstistentTypes
 ------------------------------------------------------------
 pdict
 Prints the content of the global dictionary.
+Exceptions: -
+------------------------------------------------------------
+delstack
+Deletes the contents of the stack.
+Exceptions: -
+------------------------------------------------------------
+deldict
+Deletes the contents of the global dictionary.
 Exceptions: -
 ------------------------------------------------------------

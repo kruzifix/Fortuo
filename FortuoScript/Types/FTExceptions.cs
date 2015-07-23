@@ -12,10 +12,10 @@ namespace FortuoScript.Types
         {  }
     }
 
-    class FTInconsistentTypesException : Exception
+    class FTWrongTypeException : Exception
     {
-        public FTInconsistentTypesException(string cmd)
-            :base("InconsistentTypes: unable to process ["+cmd+"].")
+        public FTWrongTypeException(string cmd)
+            :base("WrongType: unable to process ["+cmd+"].")
         { }
     }
 
@@ -25,14 +25,7 @@ namespace FortuoScript.Types
             : base("UnknownSymbol: ["+cmd+"]")
         { }
     }
-
-    class FTStackEmptyException : Exception
-    {
-        public FTStackEmptyException(string cmd)
-            : base("Stack Empty: [" + cmd + "]")
-        { }
-    }
-
+    
     class FTUnexpectedSymbolException : Exception
     {
         public FTUnexpectedSymbolException(string cmd)
