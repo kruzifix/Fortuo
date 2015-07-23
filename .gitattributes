@@ -5,7 +5,7 @@
 *.cs     diff=csharp
 
 # Custom Fortuo language
-*.for	diff=Fortuo
+*.for	linguist-language=fortuo
 
 # Standard to msysgit
 *.doc	 diff=astextplain
