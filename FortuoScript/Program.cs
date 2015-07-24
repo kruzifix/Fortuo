@@ -20,13 +20,9 @@ namespace FortuoScript
             {
                 if (args[0].Equals("-f"))
                 {
-                    string file = args[1];
-                    if (File.Exists(file))
-                    {
-                        string[] lines = File.ReadAllLines(file);
-                        foreach (var l in lines)
-                            fi.Execute(l);
-                    }
+                    string path = args[1];
+                    fi.ExecuteFile(path);
+                    
                 }
             }
 

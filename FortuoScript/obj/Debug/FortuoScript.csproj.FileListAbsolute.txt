@@ -12,3 +12,4 @@ D:\Github\Fortuo\FortuoScript\bin\Debug\test.for
 D:\Github\Fortuo\FortuoScript\bin\Debug\FortuoScript.exe
 D:\Github\Fortuo\FortuoScript\bin\Debug\FortuoScript.pdb
 D:\Github\Fortuo\FortuoScript\obj\Debug\FortuoScript.csprojResolveAssemblyReference.cache
+D:\Github\Fortuo\FortuoScript\bin\Debug\program.for

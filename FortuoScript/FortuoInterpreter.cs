@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using FortuoScript.Types;
+using System.IO;
 
 namespace FortuoScript
 {
@@ -16,7 +17,7 @@ namespace FortuoScript
 
         Dictionary<string, FTObject> dictionary;
         FTStack stack;
-        FTObject a1, a2;
+        FTObject a1, a2, a3;
 
         string word;
         int commandRecordDepth;
@@ -53,11 +54,17 @@ namespace FortuoScript
             {
                 word = m.Value;
 
-                // Values, Definition, WordSet-Recording
-                if (TryPushString() | TryPushInt() | TryPushNameDef() | EvalRecording())
+                #region Values, Definition, WordSet-Recording
+                if (TryPushString())
                     continue;
+                if (TryPushInt())
+                    continue;
+                if (TryPushNameDef())
+                    continue;
+                if (EvalRecording())
+                    continue;
+                #endregion
 
-                FTObject obj;
                 #region Word evaluation switch-statement
                 switch (word)
                 {
@@ -73,6 +80,9 @@ namespace FortuoScript
                     case "deldict":
                         dictionary.Clear();
                         break;
+                    case "ccon":
+                        Console.Clear();
+                        break;
                     #endregion
                     #region Output
                     case ".":
@@ -84,15 +94,15 @@ namespace FortuoScript
                         Console.WriteLine("----------------------------\r\nStack    Count: {0}", stack.Count);
                         for (int i = 0; i < stack.Count; i++)
                         {
-                            obj = stack.ElementAt(i);
-                            if (obj.Type == FTType.String)
-                                Console.WriteLine("{0} ->\tString:\t\"{1}\"", i, obj.Value);
-                            else if (obj.Type == FTType.Int)
-                                Console.WriteLine("{0} ->\tInt:\t{1}", i, obj.Value);
-                            else if (obj.Type == FTType.Bool)
-                                Console.WriteLine("{0} ->\tBool:\t{1}", i, obj.Value);
+                            a1 = stack.ElementAt(i);
+                            if (a1.Type == FTType.String)
+                                Console.WriteLine("{0} ->\tString:\t\"{1}\"", i, a1.Value);
+                            else if (a1.Type == FTType.Int)
+                                Console.WriteLine("{0} ->\tInt:\t{1}", i, a1.Value);
+                            else if (a1.Type == FTType.Bool)
+                                Console.WriteLine("{0} ->\tBool:\t{1}", i, a1.Value);
                             else
-                                Console.WriteLine("{0} ->\t{1}", i, obj.Value);
+                                Console.WriteLine("{0} ->\t{1}", i, a1.Value);
                         }
                         Console.WriteLine("----------------------------");
                         break;
@@ -101,9 +111,9 @@ namespace FortuoScript
                         for (int i = 0; i < dictionary.Count; i++)
                         {
                             string key = dictionary.Keys.ElementAt(i);
-                            obj = dictionary[key];
+                            a1 = dictionary[key];
 
-                            Console.WriteLine("{0}\t->\t{1}", key, obj.Value);
+                            Console.WriteLine("{0}\t->\t{1}", key, a1.Value);
                         }
                         Console.WriteLine("----------------------------");
                         break;
@@ -195,12 +205,12 @@ namespace FortuoScript
                         if (stack.Count == 0)
                             throw new FTStackUnderFlowException(word);
 
-                        obj = stack.Pop();
-                        if (obj.Type != FTType.Int)
+                        a1 = stack.Pop();
+                        if (a1.Type != FTType.Int)
                             throw new FTWrongTypeException(word);
 
-                        obj.Value = -(int)obj.Value;
-                        stack.Push(obj);
+                        a1.Value = -(int)a1.Value;
+                        stack.Push(a1);
                         break;
                     case "eq":
                         CheckType2(FTType.Int);
@@ -220,12 +230,12 @@ namespace FortuoScript
                         if (stack.Count == 0)
                             throw new FTStackUnderFlowException(word);
 
-                        obj = stack.Pop();
-                        if (obj.Type != FTType.Bool)
+                        a1 = stack.Pop();
+                        if (a1.Type != FTType.Bool)
                             throw new FTWrongTypeException(word);
 
-                        obj.Value = !(bool)obj.Value;
-                        stack.Push(obj);
+                        a1.Value = !(bool)a1.Value;
+                        stack.Push(a1);
                         break;
                     case "and":
                         CheckType2(FTType.Bool);
@@ -236,15 +246,53 @@ namespace FortuoScript
                         stack.Push(FTType.Bool, (bool)a1.Value || (bool)a2.Value);
                         break;
                     #endregion
-                    
+                    #region Flow Control
+                    case "if":
+                        if (stack.Count < 2)
+                            throw new FTStackUnderFlowException(word);
+
+                        a1 = stack.Pop();
+                        a2 = stack.Pop();
+                        if (a2.Type != FTType.Bool || a1.Type != FTType.WordSet)
+                            throw new FTWrongTypeException(word);
+
+                        if ((bool)a2.Value)
+                            Execute(a1);
+                        break;
+                    case "ifelse":
+                        if (stack.Count < 3)
+                            throw new FTStackUnderFlowException(word);
+
+                        a1 = stack.Pop();
+                        a2 = stack.Pop();
+                        a3 = stack.Pop();
+                        if (a3.Type != FTType.Bool || a2.Type != FTType.WordSet || a1.Type != FTType.WordSet)
+                            throw new FTWrongTypeException(word);
+
+                        if ((bool)a3.Value)
+                            Execute(a2);
+                        else
+                            Execute(a1);
+                        break;
+                    #endregion
+                    #region Files
+                    case "exec":
+                        if (stack.Count == 0)
+                            throw new FTStackUnderFlowException(word);
+                        a1 = stack.Pop();
+                        if (a1.Type != FTType.String)
+                            throw new FTWrongTypeException(word);
+                        ExecuteFile(a1.Value as string);
+                        break;
+                    #endregion
                     default:
                         if (dictionary.ContainsKey(word))
                         {
-                            obj = dictionary[word];
-                            if (obj.Type == FTType.WordSet)
-                                Execute(obj);
+                            a1 = dictionary[word];
+                            if (a1.Type == FTType.WordSet)
+                                Execute(a1);
                             else
-                                stack.Push(obj);
+                                stack.Push(a1);
                             continue;
                         }
 
@@ -259,6 +307,18 @@ namespace FortuoScript
         {
             if (fobj.Type == FTType.WordSet)
                 Execute(fobj.AsWordSet());
+        }
+
+        public void ExecuteFile(string path)
+        {
+            if (File.Exists(path))
+            {
+                string[] lines = File.ReadAllLines(path);
+                foreach (var l in lines)
+                    Execute(l);
+            }
+            else
+                throw new FileNotFoundException(path + " not found.");
         }
 
         private bool TryPushString()
@@ -302,7 +362,7 @@ namespace FortuoScript
             {
                 if (word == "}")
                 {
-                    List<FTObject> cmds = new List<FTObject>();
+                    FTWordSet cmds = new FTWordSet();
 
                     FTObject cmd = stack.Pop();
                     while (cmd.Type != FTType.StartSet)
