@@ -27,9 +27,6 @@ namespace FortuoScript.Types
                     case FTType.StartSet:
                         set.Append("{");
                         break;
-                    case FTType.EndSet:
-                        set.Append("{");
-                        break;
                     case FTType.WordSet:
                         set.Append("{ " + w.Value + " }");
                         break;

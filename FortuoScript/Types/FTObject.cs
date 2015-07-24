@@ -14,7 +14,6 @@ namespace FortuoScript.Types
         Bool,
         StartSet,
         Word,
-        EndSet,
         WordSet
     }
 

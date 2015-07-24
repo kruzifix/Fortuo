@@ -31,7 +31,7 @@ namespace FortuoScript
 
             commentRegex = new Regex(commentChar + ".*");
             // "(\\.|[^"\\])*"|([^ ]+)
-            splitRegex = new Regex("\"(?:\\\\.|[^\"\\\\])*\"|[^ ]+");
+            splitRegex = new Regex("\"(?:\\\\.|[^\"\\\\])*\"|[^ \t]+");
         }
 
         public bool Execute(string line)
@@ -86,9 +86,12 @@ namespace FortuoScript
                     #endregion
                     #region Output
                     case ".":
-                        if (stack.Count == 0)
-                            throw new FTStackUnderFlowException(word);
-                        Console.Write(stack.Pop().Value);
+                        Pop1();
+                        Console.Write(a1.Value);
+                        break;
+                    case "h":
+                        CheckType1(FTType.Int);
+                        Console.Write("0x{0:x}", (int)a1.Value);
                         break;
                     case "pstack":
                         Console.WriteLine("----------------------------\r\nStack    Count: {0}", stack.Count);
@@ -280,6 +283,10 @@ namespace FortuoScript
                         CheckType1(FTType.String);
                         stack.Push(FTType.String, ((string)a1.Value).Trim());
                         break;
+                    case "getchar":
+                        CheckType2(FTType.Int, FTType.String);
+                        stack.Push(FTType.Int, (int)((string)a2.Value)[(int)a1.Value]);
+                        break;
                     #endregion
                     #region Loops
                     case "repeat":
@@ -288,6 +295,29 @@ namespace FortuoScript
                         FTWordSet set = (FTWordSet)a1.Value;
                         for (int i = 0; i < num; i++)
                             Execute(set);
+                        break;
+                    case "while":
+                        CheckType2(FTType.WordSet, FTType.Bool);
+                        bool cond = (bool)a2.Value;
+                        FTWordSet body = (FTWordSet)a1.Value;
+                        while (cond)
+                        {
+                            Execute(body);
+                            CheckType1(FTType.Bool);
+                            cond = (bool)a1.Value;
+                        }
+                        break;
+                    #endregion
+                    #region Coversion
+                    case "tostr":
+                        Pop1();
+                        if (a1.Type != FTType.Int && a1.Type != FTType.Bool)
+                            throw new FTWrongTypeException(word);
+                        stack.Push(FTType.String, a1.Value.ToString().ToLower());
+                        break;
+                    case "tobool":
+                        CheckType1(FTType.Int);
+                        stack.Push(FTType.Bool, (int)a1.Value != 0);
                         break;
                     #endregion
                     case "quit":
@@ -407,6 +437,13 @@ namespace FortuoScript
                 return true;
             }
             return false;
+        }
+
+        private void Pop1()
+        {
+            if (stack.Count == 0)
+                throw new FTStackUnderFlowException(word);
+            a1 = stack.Pop();
         }
 
         private void Pop2()
