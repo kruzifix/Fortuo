@@ -22,7 +22,6 @@ namespace FortuoScript
                 {
                     string path = args[1];
                     fi.ExecuteFile(path);
-                    
                 }
             }
 
@@ -35,7 +34,8 @@ namespace FortuoScript
 
                 try
                 {
-                    fi.Execute(input);
+                    if (fi.Execute(input))
+                        return;
                 }
                 catch (Exception ex)
                 {

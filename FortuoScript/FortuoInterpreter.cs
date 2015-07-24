@@ -34,10 +34,10 @@ namespace FortuoScript
             splitRegex = new Regex("\"(?:\\\\.|[^\"\\\\])*\"|[^ ]+");
         }
 
-        public void Execute(string line)
+        public bool Execute(string line)
         {
             if (string.IsNullOrWhiteSpace(line))
-                return;
+                return false;
 
             // remove comments
             int firstCommentIndex = line.IndexOf(commentChar);
@@ -45,7 +45,7 @@ namespace FortuoScript
                 line = line.Substring(0, firstCommentIndex);
 
             if (string.IsNullOrWhiteSpace(line))
-                return;
+                return false;
 
             // split by white space
             var matches = splitRegex.Matches(line);
@@ -150,23 +150,14 @@ namespace FortuoScript
                         stack.Push(stack.Peek());
                         break;
                     case "swap":
-                        if (stack.Count < 2)
-                            throw new FTStackUnderFlowException(word);
-
-                        a1 = stack.Pop();
-                        a2 = stack.Pop();
+                        Pop2();
                         stack.Push(a1);
                         stack.Push(a2);
                         break;
                     #endregion
                     #region Definition
                     case "def":
-                        if (stack.Count < 2)
-                            throw new FTStackUnderFlowException(word);
-
-                        a1 = stack.Pop();
-                        a2 = stack.Pop();
-
+                        Pop2();
                         if (a2.Type == FTType.NameDef)
                         {
                             string name = a2.Value as string;
@@ -181,7 +172,14 @@ namespace FortuoScript
                             stack.Push(a1);
                             throw new FTWrongTypeException(word);
                         }
-
+                        break;
+                    case "undef":
+                        CheckType1(FTType.NameDef);
+                        string val = a1.Value as string;
+                        if (dictionary.ContainsKey(val))
+                            dictionary.Remove(val);
+                        else
+                            throw new FTUnexpectedSymbolException(word);
                         break;
                     #endregion
                     #region WordSet
@@ -202,15 +200,8 @@ namespace FortuoScript
                     #endregion
                     #region Integer Comparison
                     case "neg":
-                        if (stack.Count == 0)
-                            throw new FTStackUnderFlowException(word);
-
-                        a1 = stack.Pop();
-                        if (a1.Type != FTType.Int)
-                            throw new FTWrongTypeException(word);
-
-                        a1.Value = -(int)a1.Value;
-                        stack.Push(a1);
+                        CheckType1(FTType.Int);
+                        stack.Push(FTType.Int, -(int)a1.Value);
                         break;
                     case "eq":
                         CheckType2(FTType.Int);
@@ -227,15 +218,8 @@ namespace FortuoScript
                     #endregion
                     #region Bool Comparison
                     case "not":
-                        if (stack.Count == 0)
-                            throw new FTStackUnderFlowException(word);
-
-                        a1 = stack.Pop();
-                        if (a1.Type != FTType.Bool)
-                            throw new FTWrongTypeException(word);
-
-                        a1.Value = !(bool)a1.Value;
-                        stack.Push(a1);
+                        CheckType1(FTType.Bool);
+                        stack.Push(FTType.Bool, !(bool)a1.Value);
                         break;
                     case "and":
                         CheckType2(FTType.Bool);
@@ -248,14 +232,7 @@ namespace FortuoScript
                     #endregion
                     #region Flow Control
                     case "if":
-                        if (stack.Count < 2)
-                            throw new FTStackUnderFlowException(word);
-
-                        a1 = stack.Pop();
-                        a2 = stack.Pop();
-                        if (a2.Type != FTType.Bool || a1.Type != FTType.WordSet)
-                            throw new FTWrongTypeException(word);
-
+                        CheckType2(FTType.WordSet, FTType.Bool);
                         if ((bool)a2.Value)
                             Execute(a1);
                         break;
@@ -277,14 +254,45 @@ namespace FortuoScript
                     #endregion
                     #region Files
                     case "exec":
-                        if (stack.Count == 0)
-                            throw new FTStackUnderFlowException(word);
-                        a1 = stack.Pop();
-                        if (a1.Type != FTType.String)
-                            throw new FTWrongTypeException(word);
+                        CheckType1(FTType.String);
                         ExecuteFile(a1.Value as string);
                         break;
                     #endregion
+                    #region Input
+                    case "linein":
+                        stack.Push(FTType.String, Console.ReadLine());
+                        break;
+                    #endregion
+                    #region String Manipulation
+                    case "len":
+                        CheckType1(FTType.String);
+                        stack.Push(FTType.Int, (a1.Value as string).Length);
+                        break;
+                    case "concat":
+                        CheckType2(FTType.String);
+                        stack.Push(FTType.String, (string)a2.Value + (string)a1.Value);
+                        break;
+                    case "comp":
+                        CheckType2(FTType.String);
+                        stack.Push(FTType.Bool, ((string)a1.Value).Equals(a2.Value as string));
+                        break;
+                    case "trim":
+                        CheckType1(FTType.String);
+                        stack.Push(FTType.String, ((string)a1.Value).Trim());
+                        break;
+                    #endregion
+                    #region Loops
+                    case "repeat":
+                        CheckType2(FTType.WordSet, FTType.Int);
+                        int num = (int)a2.Value;
+                        FTWordSet set = (FTWordSet)a1.Value;
+                        for (int i = 0; i < num; i++)
+                            Execute(set);
+                        break;
+                    #endregion
+                    case "quit":
+                        return true;
+                        break;
                     default:
                         if (dictionary.ContainsKey(word))
                         {
@@ -301,12 +309,18 @@ namespace FortuoScript
                 }
                 #endregion
             }
+            return false;
         }
 
         private void Execute(FTObject fobj)
         {
             if (fobj.Type == FTType.WordSet)
-                Execute(fobj.AsWordSet());
+                Execute(fobj.Value.ToString());
+        }
+
+        private void Execute(FTWordSet set)
+        {
+            Execute(set.ToString());
         }
 
         public void ExecuteFile(string path)
@@ -382,6 +396,11 @@ namespace FortuoScript
                     cmds.Reverse();
                     stack.Push(FTType.WordSet, cmds);
                 }
+                else if (word == "{")
+                {
+                    commandRecordDepth++;
+                    stack.Push(FTType.StartSet, commandRecordDepth);
+                }
                 else
                     stack.Push(FTType.Word, word);
 
@@ -390,14 +409,39 @@ namespace FortuoScript
             return false;
         }
 
-        private void CheckType2(FTType type)
+        private void Pop2()
         {
             if (stack.Count < 2)
                 throw new FTStackUnderFlowException(word);
 
             a1 = stack.Pop();
             a2 = stack.Pop();
+        }
+
+        private void CheckType1(FTType type)
+        { 
+            if (stack.Count == 0)
+                throw new FTStackUnderFlowException(word);
+            a1 = stack.Pop();
+            if (a1.Type != type)
+                throw new FTWrongTypeException(word);
+        }
+
+        private void CheckType2(FTType type)
+        {
+            Pop2();
             if (a1.Type != type || a2.Type != type)
+            {
+                stack.Push(a2);
+                stack.Push(a1);
+                throw new FTWrongTypeException(word);
+            }
+        }
+
+        private void CheckType2(FTType type1, FTType type2)
+        {
+            Pop2();
+            if (a1.Type != type1 || a2.Type != type2)
             {
                 stack.Push(a2);
                 stack.Push(a1);

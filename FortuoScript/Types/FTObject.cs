@@ -28,24 +28,10 @@ namespace FortuoScript.Types
             Type = type;
             Value = value;
         }
-
-        public string AsWordSet()
+        
+        public override string ToString()
         {
-            List<FTObject> objs = (List<FTObject>)Value;
-            StringBuilder wordset = new StringBuilder();
-            foreach (FTObject o in objs)
-            {
-                if (o.Type == FTType.String)
-                    wordset.Append("\"" + o.Value + "\"");
-                else if(o.Type == FTType.NameDef)
-                    wordset.Append("/" + o.Value);
-                else
-                    wordset.Append(o.Value);
-
-                if (o != objs.Last())
-                    wordset.Append(" ");
-            }
-            return wordset.ToString();
+            return string.Format("[{0}]  ->  {1}", Type, Value);
         }
     }
 }
