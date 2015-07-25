@@ -13,7 +13,7 @@ namespace FortuoScript
     public class FortuoInterpreter
     {
         const char commentChar = '%';
-        Regex commentRegex, splitRegex;
+        Regex splitRegex;
 
         Dictionary<string, FTObject> dictionary;
         FTStack stack;
@@ -29,7 +29,6 @@ namespace FortuoScript
             commandRecordDepth = 0;
             word = "";
 
-            commentRegex = new Regex(commentChar + ".*");
             // "(\\.|[^"\\])*"|([^ ]+)
             splitRegex = new Regex("\"(?:\\\\.|[^\"\\\\])*\"|[^ \t]+");
         }
@@ -125,19 +124,19 @@ namespace FortuoScript
                         break;
                     #endregion
                     #region Integer Manipulation
-                    case "add":
+                    case "+":
                         CheckType2(FTType.Int);
                         stack.Push(FTType.Int, (int)a1.Value + (int)a2.Value);
                         break;
-                    case "sub":
+                    case "-":
                         CheckType2(FTType.Int);
                         stack.Push(FTType.Int, (int)a2.Value - (int)a1.Value);
                         break;
-                    case "mul":
+                    case "*":
                         CheckType2(FTType.Int);
                         stack.Push(FTType.Int, (int)a1.Value * (int)a2.Value);
                         break;
-                    case "div":
+                    case "/":
                         CheckType2(FTType.Int);
                         stack.Push(FTType.Int, (int)a2.Value / (int)a1.Value);
                         break;
@@ -320,6 +319,34 @@ namespace FortuoScript
                         stack.Push(FTType.Bool, (int)a1.Value != 0);
                         break;
                     #endregion
+                    #region List
+                    case "list":
+                        stack.Push(FTType.List, new FTList());
+                        break;
+                    case "count":
+                        Peek1();
+                        if (a1.Type != FTType.List)
+                            throw new FTWrongTypeException(word);
+                        stack.Push(FTType.Int, ((FTList)a1.Value).Count);
+                        break;
+                    case "add":
+                        Pop2();
+                        if (a2.Type != FTType.List)
+                            throw new FTWrongTypeException(word);
+                        ((FTList)a2.Value).Add(a1);
+                        stack.Push(FTType.List, a2.Value);
+                        break;
+                    case "get":
+                        CheckType2(FTType.Int, FTType.List);
+                        stack.Push(FTType.List, a2.Value);
+                        stack.Push(((FTList)a2.Value)[(int)a1.Value]);
+                        break;
+                    case "remove":
+                        CheckType2(FTType.Int, FTType.List);
+                        stack.Push(FTType.List, a2.Value);
+                        ((FTList)a2.Value).RemoveAt((int)a1.Value);
+                        break;
+                    #endregion
                     case "quit":
                         return true;
                         break;
@@ -378,7 +405,7 @@ namespace FortuoScript
 
         private bool TryPushNameDef()
         {
-            if (word.StartsWith("/"))
+            if (word.StartsWith("/") && word.Length > 1)
             {
                 string key = word.Substring(1);
                 stack.Push(FTType.NameDef, key);
@@ -399,7 +426,7 @@ namespace FortuoScript
             }
             return false;
         }
-
+        
         private bool EvalRecording()
         {
             if (commandRecordDepth > 0)
@@ -437,6 +464,13 @@ namespace FortuoScript
                 return true;
             }
             return false;
+        }
+
+        private void Peek1()
+        { 
+            if (stack.Count == 0)
+                throw new FTStackUnderFlowException(word);
+            a1 = stack.Peek();
         }
 
         private void Pop1()

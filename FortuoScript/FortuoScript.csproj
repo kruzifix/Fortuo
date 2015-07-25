@@ -46,12 +46,13 @@
     <Compile Include="FortuoInterpreter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Types\FTList.cs" />
     <Compile Include="Types\FTObject.cs" />
     <Compile Include="Types\FTWordSet.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="program.for">
+    <None Include="functions.for">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="test.for">

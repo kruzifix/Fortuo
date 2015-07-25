@@ -12,6 +12,7 @@ namespace FortuoScript.Types
         String,
         Int,
         Bool,
+        List,
         StartSet,
         Word,
         WordSet
