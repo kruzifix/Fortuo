@@ -1,9 +1,9 @@
 ﻿/complen {
 len /s2 swap def
 len /s1 swap def
-s1 s2 eq { "same length" } if
-s1 s2 gt { "first string is longer" } if
-s1 s2 lt { "second string is longer" } if
+s1 s2 = { "same length" } if
+s1 s2 > { "first string is longer" } if
+s1 s2 < { "second string is longer" } if
 /s1 undef
 /s2 undef
 } def
@@ -12,7 +12,7 @@ s1 s2 lt { "second string is longer" } if
 	true { 
 		dup . cr 
 		1 - 
-		dup 0 lt not
+		dup 0 < not
 	} while
 } def
 
@@ -22,11 +22,11 @@ s1 s2 lt { "second string is longer" } if
 	/sum1 0 def
 	/sum2 0 def
 
-	i str len lt {
+	i str len < {
 		/sum1 sum1 str i getchar + 255 mod def
 		/sum2 sum2 sum1 + 255 mod def
 		/i i 1 + def 
-		i str len lt
+		i str len <
 	} while
 
 	sum2 256 * sum1 +
@@ -59,7 +59,7 @@ s1 s2 lt { "second string is longer" } if
 			/lastsp i 1 + def
 		} if
 		/i i 1 + def
-		i str len lt
+		i str len <
 	} while
 	str lastsp i lastsp - substr add
 	/spchar undef

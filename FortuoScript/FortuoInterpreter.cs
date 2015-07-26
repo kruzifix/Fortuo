@@ -208,15 +208,15 @@ namespace FortuoScript
                         CheckType1(FTType.Int);
                         stack.Push(FTType.Int, -(int)a1.Value);
                         break;
-                    case "eq":
+                    case "=":
                         CheckType2(FTType.Int);
                         stack.Push(FTType.Bool, (int)a1.Value == (int)a2.Value);
                         break;
-                    case "gt":
+                    case ">":
                         CheckType2(FTType.Int);
                         stack.Push(FTType.Bool, (int)a2.Value > (int)a1.Value);
                         break;
-                    case "lt":
+                    case "<":
                         CheckType2(FTType.Int);
                         stack.Push(FTType.Bool, (int)a2.Value < (int)a1.Value);
                         break;
