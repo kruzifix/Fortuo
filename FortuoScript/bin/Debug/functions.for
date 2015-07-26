@@ -9,11 +9,11 @@ s1 s2 lt { "second string is longer" } if
 } def
 
 /countdown {
-true { 
-  dup . cr 
-  1 - 
-  dup 0 lt not
-} while
+	true { 
+		dup . cr 
+		1 - 
+		dup 0 lt not
+	} while
 } def
 
 /fletcher {
@@ -45,4 +45,25 @@ true {
 	/i undef
 } def
 
-list "item1" add "item2" add "item3" add plist
+/split {
+	0 getchar /spchar swap def
+	/str swap def
+	/i 0 def
+	/lastsp 0 def
+	list
+	true {
+		str i getchar spchar eq
+		{
+			str lastsp i lastsp - substr
+			add
+			/lastsp i 1 + def
+		} if
+		/i i 1 + def
+		i str len lt
+	} while
+	str lastsp i lastsp - substr add
+	/spchar undef
+	/str undef
+	/i undef
+	/lastsp undef
+} def

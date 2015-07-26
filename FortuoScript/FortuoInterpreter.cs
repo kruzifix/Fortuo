@@ -156,6 +156,9 @@ namespace FortuoScript
                         stack.Push(a1);
                         stack.Push(a2);
                         break;
+                    case "drop":
+                        Pop1();
+                        break;
                     #endregion
                     #region Definition
                     case "def":
@@ -285,6 +288,18 @@ namespace FortuoScript
                     case "getchar":
                         CheckType2(FTType.Int, FTType.String);
                         stack.Push(FTType.Int, (int)((string)a2.Value)[(int)a1.Value]);
+                        break;
+                    case "substr":
+                        if (stack.Count < 3)
+                            throw new FTStackUnderFlowException(word);
+
+                        a1 = stack.Pop();
+                        a2 = stack.Pop();
+                        a3 = stack.Pop();
+                        if (a3.Type != FTType.String || a2.Type != FTType.Int || a1.Type != FTType.Int)
+                            throw new FTWrongTypeException(word);
+
+                        stack.Push(FTType.String, ((string)a3.Value).Substring((int)a2.Value, (int)a1.Value));
                         break;
                     #endregion
                     #region Loops
