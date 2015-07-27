@@ -67,3 +67,5 @@ s1 s2 < { "second string is longer" } if
 	/i undef
 	/lastsp undef
 } def
+
+"included functions.for" . cr cr

@@ -290,15 +290,9 @@ namespace FortuoScript
                         stack.Push(FTType.Int, (int)((string)a2.Value)[(int)a1.Value]);
                         break;
                     case "substr":
-                        if (stack.Count < 3)
-                            throw new FTStackUnderFlowException(word);
-
-                        a1 = stack.Pop();
-                        a2 = stack.Pop();
-                        a3 = stack.Pop();
+                        Pop3();
                         if (a3.Type != FTType.String || a2.Type != FTType.Int || a1.Type != FTType.Int)
                             throw new FTWrongTypeException(word);
-
                         stack.Push(FTType.String, ((string)a3.Value).Substring((int)a2.Value, (int)a1.Value));
                         break;
                     #endregion
@@ -355,6 +349,13 @@ namespace FortuoScript
                         CheckType2(FTType.Int, FTType.List);
                         stack.Push(FTType.List, a2.Value);
                         stack.Push(((FTList)a2.Value)[(int)a1.Value]);
+                        break;
+                    case "set":
+                        Pop3();
+                        if (a3.Type != FTType.List || a1.Type != FTType.Int)
+                            throw new FTWrongTypeException(word);
+                        ((FTList)a3.Value)[(int)a1.Value] = a2;
+                        stack.Push(FTType.List, a3.Value);
                         break;
                     case "remove":
                         CheckType2(FTType.Int, FTType.List);
@@ -504,6 +505,16 @@ namespace FortuoScript
             a2 = stack.Pop();
         }
 
+        private void Pop3()
+        {
+            if (stack.Count < 3)
+                throw new FTStackUnderFlowException(word);
+
+            a1 = stack.Pop();
+            a2 = stack.Pop();
+            a3 = stack.Pop();
+        }
+
         private void CheckType1(FTType type)
         { 
             if (stack.Count == 0)
@@ -529,6 +540,18 @@ namespace FortuoScript
             Pop2();
             if (a1.Type != type1 || a2.Type != type2)
             {
+                stack.Push(a2);
+                stack.Push(a1);
+                throw new FTWrongTypeException(word);
+            }
+        }
+
+        private void CheckType3(FTType type1, FTType type2, FTType type3)
+        {
+            Pop3();
+            if (a3.Type != type3 || a2.Type != type2 || a1.Type != type1)
+            {
+                stack.Push(a3);
                 stack.Push(a2);
                 stack.Push(a1);
                 throw new FTWrongTypeException(word);

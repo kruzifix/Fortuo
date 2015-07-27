@@ -52,7 +52,7 @@ s1 s2 < { "second string is longer" } if
 	/lastsp 0 def
 	list
 	true {
-		str i getchar spchar eq
+		str i getchar spchar =
 		{
 			str lastsp i lastsp - substr
 			add
@@ -67,3 +67,5 @@ s1 s2 < { "second string is longer" } if
 	/i undef
 	/lastsp undef
 } def
+
+"included functions.for" . cr cr
