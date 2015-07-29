@@ -1,11 +1,11 @@
 ﻿/complen {
-len /s2 swap def
-len /s1 swap def
-s1 s2 = { "same length" } if
-s1 s2 > { "first string is longer" } if
-s1 s2 < { "second string is longer" } if
-/s1 undef
-/s2 undef
+	len /s2 swap def
+	len /s1 swap def
+	s1 s2 = { "same length" } if
+	s1 s2 > { "first string is longer" } if
+	s1 s2 < { "second string is longer" } if
+	/s1 undef
+	/s2 undef
 } def
 
 /countdown {
@@ -67,5 +67,29 @@ s1 s2 < { "second string is longer" } if
 	/i undef
 	/lastsp undef
 } def
+
+/sort {
+	true {
+		/i 0 def
+		/sorted true def
+		count 1 - {
+			i get /j swap def
+			i 1 + get /k swap def
+			k j < {
+				k i set
+				j i 1 + set
+				/sorted false def
+			} if
+
+			/i i 1 + def
+		} repeat
+		sorted not
+	} while
+	/sorted undef
+	/i undef /j undef /k undef
+} def
+
+list 10 add 2 add 5 add 3 add 1 add
+plist
 
 "included functions.for" . cr cr
