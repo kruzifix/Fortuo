@@ -4,6 +4,7 @@
 	s1 s2 = { "same length" } if
 	s1 s2 > { "first string is longer" } if
 	s1 s2 < { "second string is longer" } if
+	.
 	/s1 undef
 	/s2 undef
 } def
@@ -14,6 +15,7 @@
 		1 - 
 		dup 0 < not
 	} while
+	drop
 } def
 
 /fletcher {
@@ -88,5 +90,7 @@
 	/sorted undef
 	/i undef /j undef /k undef
 } def
+
+list 0 add 1 add 2 add
 
 "included functions.for" . cr cr

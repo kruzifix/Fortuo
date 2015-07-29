@@ -191,7 +191,7 @@ namespace FortuoScript
                     #region WordSet
                     case "{":
                         recordStack.Push(RecordMode.Wordset);
-                        stack.Push(FTType.StartSet, stack.Count);
+                        stack.Push(FTType.StartSet, recordStack.Count);
                         break;
                     case "}":
                         if (recordStack.Count <= 0 || stack.Count <= 0)
@@ -240,14 +240,14 @@ namespace FortuoScript
                     case "if":
                         CheckType2(FTType.WordSet, FTType.Bool);
                         if ((bool)a2.Value)
-                            Execute(a1);
+                            ExecuteWordSet((FTWordSet)a1.Value);
                         break;
                     case "ifelse":
                         CheckType3(FTType.WordSet, FTType.WordSet, FTType.Bool);
                         if ((bool)a3.Value)
-                            Execute(a2);
+                            ExecuteWordSet((FTWordSet)a2.Value);
                         else
-                            Execute(a1);
+                            ExecuteWordSet((FTWordSet)a1.Value);
                         break;
                     #endregion
                     #region Files
@@ -291,17 +291,17 @@ namespace FortuoScript
                     case "repeat":
                         CheckType2(FTType.WordSet, FTType.Int);
                         int num = (int)a2.Value;
-                        FTWordSet set = (FTWordSet)a1.Value;
+                        FTWordSet s = (FTWordSet)a1.Value;
                         for (int i = 0; i < num; i++)
-                            Execute(set);
+                            ExecuteWordSet(s);
                         break;
                     case "while":
                         CheckType2(FTType.WordSet, FTType.Bool);
                         bool cond = (bool)a2.Value;
-                        FTWordSet body = (FTWordSet)a1.Value;
+                        FTWordSet set = (FTWordSet)a1.Value;
                         while (cond)
                         {
-                            Execute(body);
+                            ExecuteWordSet(set);
                             CheckType1(FTType.Bool);
                             cond = (bool)a1.Value;
                         }
@@ -371,11 +371,11 @@ namespace FortuoScript
                     default:
                         if (dictionary.ContainsKey(word))
                         {
-                            a1 = dictionary[word];
-                            if (a1.Type == FTType.WordSet)
-                                Execute(a1);
+                            FTObject v = dictionary[word];
+                            if (v.Type == FTType.WordSet)
+                                ExecuteWordSet((FTWordSet)v.Value);
                             else
-                                stack.Push(a1);
+                                stack.Push(v);
                             continue;
                         }
 
@@ -387,17 +387,29 @@ namespace FortuoScript
             return false;
         }
 
-        private void Execute(FTObject fobj)
+        private void ExecuteWordSet(FTWordSet set)
         {
-            if (fobj.Type == FTType.WordSet)
-                Execute(fobj.Value.ToString());
+            foreach (FTObject o in set)
+                Execute(o);
         }
 
-        private void Execute(FTWordSet set)
+        private void Execute(FTObject obj)
         {
-            Execute(set.ToString());
+            switch (obj.Type)
+            { 
+                case FTType.Bool:
+                case FTType.Int:
+                case FTType.String:
+                case FTType.NameDef:
+                case FTType.WordSet:
+                    stack.Push(obj);
+                    break;
+                case FTType.Word:
+                    Execute((string)obj.Value);
+                    break;
+            }
         }
-
+        
         public void ExecuteFile(string path)
         {
             if (File.Exists(path))
@@ -452,8 +464,8 @@ namespace FortuoScript
                 switch (word)
                 { 
                     case "[":
-                        recordStack.Push(RecordMode.List);
                         stack.Push(FTType.StartList, recordStack.Count);
+                        recordStack.Push(RecordMode.List);
                         break;
                     case "]":
                         FTList list = new FTList();
