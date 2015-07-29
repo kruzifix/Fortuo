@@ -7,36 +7,36 @@ namespace FortuoScript.Types
 {
     class FTStackUnderFlowException : Exception
     {
-        public FTStackUnderFlowException(string cmd)
-            : base("StackUnderFlow: not enough objects on stack for operation: ["+cmd+"].")
+        public FTStackUnderFlowException(string msg)
+            : base("<-- FTStackUnderFlowException -->\r\n" + msg)
         {  }
     }
 
     class FTWrongTypeException : Exception
     {
-        public FTWrongTypeException(string cmd)
-            :base("WrongType: unable to process ["+cmd+"].")
+        public FTWrongTypeException(string msg)
+            : base("<-- FTWrongTypeException -->\r\n" + msg)
         { }
     }
 
     class FTUnknownSymbolException : Exception
     {
-        public FTUnknownSymbolException(string cmd)
-            : base("UnknownSymbol: ["+cmd+"]")
+        public FTUnknownSymbolException(string msg)
+            : base("<-- FTUnknownSymbolException -->\r\n" + msg)
         { }
     }
     
     class FTUnexpectedSymbolException : Exception
     {
-        public FTUnexpectedSymbolException(string cmd)
-            : base("UnexpectedSymbol: [" + cmd + "]")
+        public FTUnexpectedSymbolException(string msg)
+            : base("<-- FTUnexpectedSymbolException -->\r\n" + msg)
         { }
     }
 
     class FTWoopsException : Exception
     {
-        public FTWoopsException(string cmd)
-            : base("Woops!  [" + cmd + "]")
+        public FTWoopsException(string msg)
+            : base("<-- FTWoopsException -->\r\n" + msg)
         { }
     }
 }

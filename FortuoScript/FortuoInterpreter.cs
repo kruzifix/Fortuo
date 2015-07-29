@@ -10,6 +10,11 @@ using System.IO;
 
 namespace FortuoScript
 {
+    enum RecordMode 
+    {
+        Wordset, List
+    }
+
     public class FortuoInterpreter
     {
         const char commentChar = '%';
@@ -20,13 +25,13 @@ namespace FortuoScript
         FTObject a1, a2, a3;
 
         string word;
-        int commandRecordDepth;
+        Stack<RecordMode> recordStack;
 
         public FortuoInterpreter()
         {
             stack = new FTStack();
             dictionary = new Dictionary<string, FTObject>();
-            commandRecordDepth = 0;
+            recordStack = new Stack<RecordMode>();
             word = "";
 
             // "(\\.|[^"\\])*"|([^ ]+)
@@ -60,7 +65,7 @@ namespace FortuoScript
                     continue;
                 if (TryPushNameDef())
                     continue;
-                if (EvalRecording())
+                if (Record())
                     continue;
                 #endregion
 
@@ -69,7 +74,7 @@ namespace FortuoScript
                 {
                     #region Reset / Clear
                     case "clear":
-                        commandRecordDepth = 0;
+                        recordStack.Clear();
                         stack.Clear();
                         dictionary.Clear();
                         break;
@@ -148,7 +153,7 @@ namespace FortuoScript
                     #region Stack Manipulation
                     case "dup":
                         if (stack.Count == 0)
-                            throw new FTStackUnderFlowException(word);
+                            throw new FTStackUnderFlowException("'dup': no items on stack.");
                         stack.Push(stack.Peek());
                         break;
                     case "swap":
@@ -172,11 +177,7 @@ namespace FortuoScript
                                 dictionary.Add(name, a1);
                         }
                         else
-                        {
-                            stack.Push(a2);
-                            stack.Push(a1);
-                            throw new FTWrongTypeException(word);
-                        }
+                            throw new FTWrongTypeException("'def': second top most object of stack has to be of type 'NameDef'.");
                         break;
                     case "undef":
                         CheckType1(FTType.NameDef);
@@ -184,17 +185,17 @@ namespace FortuoScript
                         if (dictionary.ContainsKey(val))
                             dictionary.Remove(val);
                         else
-                            throw new FTUnexpectedSymbolException(word);
+                            throw new FTUnexpectedSymbolException("variable '{0}' not defined in dictionary.");
                         break;
                     #endregion
                     #region WordSet
                     case "{":
-                        commandRecordDepth++;
-                        stack.Push(FTType.StartSet, commandRecordDepth);
+                        recordStack.Push(RecordMode.Wordset);
+                        stack.Push(FTType.StartSet, stack.Count);
                         break;
                     case "}":
-                        if (commandRecordDepth <= 0)
-                            throw new FTUnexpectedSymbolException(word);
+                        if (recordStack.Count <= 0 || stack.Count <= 0)
+                            throw new FTUnexpectedSymbolException("'}': Stack empty.");
                         break;
                     #endregion
                     #region Values
@@ -242,15 +243,7 @@ namespace FortuoScript
                             Execute(a1);
                         break;
                     case "ifelse":
-                        if (stack.Count < 3)
-                            throw new FTStackUnderFlowException(word);
-
-                        a1 = stack.Pop();
-                        a2 = stack.Pop();
-                        a3 = stack.Pop();
-                        if (a3.Type != FTType.Bool || a2.Type != FTType.WordSet || a1.Type != FTType.WordSet)
-                            throw new FTWrongTypeException(word);
-
+                        CheckType3(FTType.WordSet, FTType.WordSet, FTType.Bool);
                         if ((bool)a3.Value)
                             Execute(a2);
                         else
@@ -290,9 +283,7 @@ namespace FortuoScript
                         stack.Push(FTType.Int, (int)((string)a2.Value)[(int)a1.Value]);
                         break;
                     case "substr":
-                        Pop3();
-                        if (a3.Type != FTType.String || a2.Type != FTType.Int || a1.Type != FTType.Int)
-                            throw new FTWrongTypeException(word);
+                        CheckType3(FTType.Int, FTType.Int, FTType.String);
                         stack.Push(FTType.String, ((string)a3.Value).Substring((int)a2.Value, (int)a1.Value));
                         break;
                     #endregion
@@ -320,7 +311,7 @@ namespace FortuoScript
                     case "tostr":
                         Pop1();
                         if (a1.Type != FTType.Int && a1.Type != FTType.Bool)
-                            throw new FTWrongTypeException(word);
+                            throw new FTWrongTypeException(string.Format("'tostr': object to convert is of type {0}.\r\ncan only parse types Int and Bool.", a1.Type));
                         stack.Push(FTType.String, a1.Value.ToString().ToLower());
                         break;
                     case "tobool":
@@ -335,32 +326,43 @@ namespace FortuoScript
                     case "count":
                         Peek1();
                         if (a1.Type != FTType.List)
-                            throw new FTWrongTypeException(word);
+                            throw new FTWrongTypeException("'count' expects top object of stack to be from type FTList.");
                         stack.Push(FTType.Int, ((FTList)a1.Value).Count);
                         break;
                     case "add":
                         Pop2();
                         if (a2.Type != FTType.List)
-                            throw new FTWrongTypeException(word);
+                            throw new FTWrongTypeException("'add': second top most object of stack has to be of type FTList.");
                         ((FTList)a2.Value).Add(a1);
                         stack.Push(FTType.List, a2.Value);
                         break;
                     case "get":
                         CheckType2(FTType.Int, FTType.List);
                         stack.Push(FTType.List, a2.Value);
+                        // TODO: add IndexOutOfBounds check and exception
                         stack.Push(((FTList)a2.Value)[(int)a1.Value]);
                         break;
                     case "set":
                         Pop3();
                         if (a3.Type != FTType.List || a1.Type != FTType.Int)
                             throw new FTWrongTypeException(word);
+                        // TODO: add IndexOutOfBounds check and exception
                         ((FTList)a3.Value)[(int)a1.Value] = a2;
                         stack.Push(FTType.List, a3.Value);
                         break;
                     case "remove":
                         CheckType2(FTType.Int, FTType.List);
                         stack.Push(FTType.List, a2.Value);
+                        // TODO: add IndexOutOfBounds check and exception
                         ((FTList)a2.Value).RemoveAt((int)a1.Value);
+                        break;
+                    case "[":
+                        recordStack.Push(RecordMode.List);
+                        stack.Push(FTType.StartList, recordStack.Count);
+                        break;
+                    case "]":
+                        if (recordStack.Count <= 0 || stack.Count <= 0)
+                            throw new FTUnexpectedSymbolException("']': Stack empty.");
                         break;
                     #endregion
                     case "quit":
@@ -377,7 +379,7 @@ namespace FortuoScript
                             continue;
                         }
 
-                        throw new FTUnknownSymbolException(word);
+                        throw new FTUnknownSymbolException(string.Format("Unable to parse symbol: '{0}'", word));
                         break;
                 }
                 #endregion
@@ -442,41 +444,75 @@ namespace FortuoScript
             }
             return false;
         }
-        
-        private bool EvalRecording()
+
+        private bool Record()
         {
-            if (commandRecordDepth > 0)
+            if (recordStack.Count > 0)
             {
-                if (word == "}")
-                {
-                    FTWordSet cmds = new FTWordSet();
+                switch (word)
+                { 
+                    case "[":
+                        recordStack.Push(RecordMode.List);
+                        stack.Push(FTType.StartList, recordStack.Count);
+                        break;
+                    case "]":
+                        FTList list = new FTList();
 
-                    FTObject cmd = stack.Pop();
-                    while (cmd.Type != FTType.StartSet)
-                    {
-                        cmds.Add(cmd);
+                        while (true)
+                        {
+                            Pop1();
 
-                        cmd = stack.Pop();
-                    }
-                    int startCommandDepth = (int)cmd.Value;
+                            if (a1.Type == FTType.StartSet)
+                                throw new FTUnexpectedSymbolException("Encountered '{' (start of WordSet) when parsing List.");
+                            if (a1.Type == FTType.StartList)
+                                break;
+                            list.Add(a1);
+                        }
 
-                    if (startCommandDepth != commandRecordDepth)
-                    {
-                        // Woops!
-                        throw new FTWoopsException(word);
-                    }
-                    commandRecordDepth--;
-                    cmds.Reverse();
-                    stack.Push(FTType.WordSet, cmds);
+                        if ((int)a1.Value != recordStack.Count || a1.Type != FTType.StartList)
+                            throw new FTWoopsException(word);
+                        recordStack.Pop();
+                        list.Reverse();
+                        stack.Push(FTType.List, list);
+                        break;
+                    case "{":
+                        recordStack.Push(RecordMode.Wordset);
+                        stack.Push(FTType.StartSet, recordStack.Count);
+                        break;
+                    case "}": 
+                        FTWordSet cmds = new FTWordSet();
+
+                        while (true)
+                        {
+                            Pop1();
+
+                            if (a1.Type == FTType.StartList)
+                                throw new FTUnexpectedSymbolException("Encountered '[' (start of List) when parsing WordSet.");
+                            if (a1.Type == FTType.StartSet)
+                                break;
+
+                            cmds.Add(a1);
+                        }
+                        
+                        if ((int)a1.Value != recordStack.Count || a1.Type != FTType.StartSet)
+                            throw new FTWoopsException(word);
+                        recordStack.Pop();
+                        cmds.Reverse();
+                        stack.Push(FTType.WordSet, cmds);
+                        break;
+                    default:
+                        if (recordStack.Peek() == RecordMode.List)
+                        {
+                            if (TryPushInt())
+                                return true;
+                            else if (TryPushString())
+                                return true;
+                            else if (TryPushNameDef())
+                                return true;
+                        }
+                        stack.Push(FTType.Word, word);
+                        break;
                 }
-                else if (word == "{")
-                {
-                    commandRecordDepth++;
-                    stack.Push(FTType.StartSet, commandRecordDepth);
-                }
-                else
-                    stack.Push(FTType.Word, word);
-
                 return true;
             }
             return false;
@@ -485,21 +521,21 @@ namespace FortuoScript
         private void Peek1()
         { 
             if (stack.Count == 0)
-                throw new FTStackUnderFlowException(word);
+                throw new FTStackUnderFlowException(string.Format("Command '{0}' tried to peek 1 Object.", word));
             a1 = stack.Peek();
         }
 
         private void Pop1()
         {
             if (stack.Count == 0)
-                throw new FTStackUnderFlowException(word);
+                throw new FTStackUnderFlowException(string.Format("Command '{0}' tried to pop 1 Object.", word));
             a1 = stack.Pop();
         }
 
         private void Pop2()
         {
             if (stack.Count < 2)
-                throw new FTStackUnderFlowException(word);
+                throw new FTStackUnderFlowException(string.Format("Command '{0}' tried to pop 2 Objects.", word));
 
             a1 = stack.Pop();
             a2 = stack.Pop();
@@ -508,7 +544,7 @@ namespace FortuoScript
         private void Pop3()
         {
             if (stack.Count < 3)
-                throw new FTStackUnderFlowException(word);
+                throw new FTStackUnderFlowException(string.Format("Command '{0}' tried to pop 3 Objects.", word));
 
             a1 = stack.Pop();
             a2 = stack.Pop();
@@ -516,46 +552,31 @@ namespace FortuoScript
         }
 
         private void CheckType1(FTType type)
-        { 
-            if (stack.Count == 0)
-                throw new FTStackUnderFlowException(word);
-            a1 = stack.Pop();
+        {
+            Pop1();
             if (a1.Type != type)
-                throw new FTWrongTypeException(word);
+                throw new FTWrongTypeException(string.Format("Wrong Argument Types for Command: '{0}'\r\nExpecting {1}", word, type));
         }
 
         private void CheckType2(FTType type)
         {
             Pop2();
             if (a1.Type != type || a2.Type != type)
-            {
-                stack.Push(a2);
-                stack.Push(a1);
-                throw new FTWrongTypeException(word);
-            }
+                throw new FTWrongTypeException(string.Format("Wrong Argument Types for Command: '{0}'\r\nExpecting {1}, {2}", word, type, type));
         }
 
         private void CheckType2(FTType type1, FTType type2)
         {
             Pop2();
             if (a1.Type != type1 || a2.Type != type2)
-            {
-                stack.Push(a2);
-                stack.Push(a1);
-                throw new FTWrongTypeException(word);
-            }
+                throw new FTWrongTypeException(string.Format("Wrong Argument Types for Command: '{0}'\r\nExpecting {1}, {2}", word, type1, type2));
         }
 
         private void CheckType3(FTType type1, FTType type2, FTType type3)
         {
             Pop3();
             if (a3.Type != type3 || a2.Type != type2 || a1.Type != type1)
-            {
-                stack.Push(a3);
-                stack.Push(a2);
-                stack.Push(a1);
-                throw new FTWrongTypeException(word);
-            }
+                throw new FTWrongTypeException(string.Format("Wrong Argument Types for Command: '{0}'\r\nExpecting {1}, {2}, {3}", word, type1, type2, type3));
         }
     }
 }

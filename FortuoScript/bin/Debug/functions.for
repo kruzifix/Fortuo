@@ -89,7 +89,4 @@
 	/i undef /j undef /k undef
 } def
 
-list 10 add 2 add 5 add 3 add 1 add
-plist
-
 "included functions.for" . cr cr
