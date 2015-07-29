@@ -10,13 +10,13 @@ using System.IO;
 
 namespace FortuoScript
 {
-    enum RecordMode 
-    {
-        Wordset, List
-    }
-
     public class FortuoInterpreter
     {
+        enum RecordMode
+        {
+            Wordset, List
+        }
+
         const char commentChar = '%';
         Regex splitRegex;
 
@@ -364,10 +364,11 @@ namespace FortuoScript
                         if (recordStack.Count <= 0 || stack.Count <= 0)
                             throw new FTUnexpectedSymbolException("']': Stack empty.");
                         break;
-                    #endregion
+                    #endregion 
                     case "quit":
                         return true;
                         break;
+                    #region default
                     default:
                         if (dictionary.ContainsKey(word))
                         {
@@ -381,6 +382,7 @@ namespace FortuoScript
 
                         throw new FTUnknownSymbolException(string.Format("Unable to parse symbol: '{0}'", word));
                         break;
+                    #endregion
                 }
                 #endregion
             }
