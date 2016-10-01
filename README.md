@@ -41,7 +41,7 @@ Comments start with % and span for the rest of the line.
 ### Definition 
 |Name|Consumes|Result|Description|
 |---|:---:|:---:|---|
-|`/<name>`|-|NameDef|Pushes a NameDef object (Value = <name>) on the stack.|
+|`/<name>`|-|NameDef|Pushes a NameDef object (Value = \<name\>) on the stack.|
 |`def`|NameDef, object|-|Adds a entry to the global dictionary, which associates the object with the Name specified by the NameDef object.|
 |`undef`|NameDef|-|Removes a entry from the global dictionary.|
  
@@ -56,7 +56,7 @@ Comments start with % and span for the rest of the line.
 |---|:---:|:---:|---|
 |`true, false`|-|Bool|Pushes bool on the stack.|
 |`Integer`|-|Int|Pushes an integer on the stack.|
-|`"<string>"`|-|String|Strings are enclosed by quotes. When pushing on the stack, the quotes are removed.|
+|`"string"`|-|String|Strings are enclosed by quotes. When pushing on the stack, the quotes are removed.|
 
 ### Integer Comparison 
 |Name|Consumes|Result|Description|
