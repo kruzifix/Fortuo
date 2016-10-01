@@ -41,7 +41,7 @@
 /plist {
 	/i 0 def
 	count {
-		i get . cr
+		i . ": " . i get . cr
 		/i i 1 + def
 	} repeat
 	/i undef
@@ -90,7 +90,5 @@
 	/sorted undef
 	/i undef /j undef /k undef
 } def
-
-list 0 add 1 add 2 add
 
 "included functions.for" . cr cr

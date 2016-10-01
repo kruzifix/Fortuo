@@ -31,22 +31,22 @@ clear
 Resets the whole Interpreter. (Clears the stack and global dictionary.)
 Exceptions: -
 ------------------------------------------------------------
-add
++ (Addition)
 Pops two objects from the stack and adds them together.
 The result is pushed on of the stack.
 Exceptions: StackUnderFlow, InconsistentTypes
 ------------------------------------------------------------
-sub
+- (Subtraction)
 Pops two objects from the stack and subtracts <value1> from <value2>.
 The result is pushed on of the stack.
 Exceptions: StackUnderFlow, InconsistentTypes
 ------------------------------------------------------------
-mul
+* (Multiplication)
 Pops two objects from the stack and multiplies them together.
 The result is pushed on of the stack.
 Exceptions: StackUnderFlow, InconsistentTypes
 ------------------------------------------------------------
-div
+/ (Division)
 Pops two objects from the stack and divides <value2> by <value1>.
 The result is pushed on of the stack.
 Exceptions: StackUnderFlow, InconsistentTypes
